@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+</head>
+<body>
+
+<canvas id="myCanvas" width="300" height="300" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+<script type="text/javascript">
+
+
+	var c=document.getElementById("myCanvas");
+	var ctx=c.getContext("2d");
+	ctx.fillRect(0,0,360,360);
+	ctx.stroke();
+
+	var theBoard = [
+					[1,3,4,5,2,0],
+					[2,5,"yellow",4,1,3],
+					[0,1,3,2,5,4],
+					[5,4,"orange",3,0,2],
+					[4,2,5,0,3,1],
+					[3,0,2,1,4,5],			
+				];
+	var colors = ["blue","purple","orange","red","yellow","green"];
+	thePieces = [];
+	colors.forEach(
+		function(c){
+			[1,2,3,4,5,6].forEach(
+				function(h){
+					thePieces.push({color: c, height: h});
+				})
+		});
+
+	thePieces = thePieces.filter(function(i){return (i.color!="orange" || i.height!=6)});
+	thePieces = thePieces.filter(function(i){return (i.color!="yellow" || i.height!=5)});
+
+	function solveBoard(pieces,b,depth){
+
+		window.setTimeout(function(){drawBoard(b)},depth*300);
+
+		if (pieces.length == 0){
+			//display(b);
+			return b;
+		}
+
+		var piece = pieces[0];
+		var foundSpotForPiece = false;
+		var i = 0;
+		var j = 0;
+		var tempBoard;
+
+		for(i=0;i<b.length;i++){
+			for (j=0;j<b[i].length;j++){			
+				if (!foundSpotForPiece && validMove(piece,b,i,j)){
+					tempBoard = copy(b);
+					tempBoard[i][j] = piece.color;
+					x = solveBoard(pieces.slice(1),tempBoard,depth+1)
+					if(!x==false){
+						foundSpotForPiece = true;
+						tempBoard = x;
+					}
+				}
+			}
+		}
+		if (!foundSpotForPiece){
+			return false;		
+		}else{
+			return tempBoard;
+		}
+	}
+
+	function validMove(piece,b,i,j){
+
+
+		if (!Number.isInteger(b[i][j])) return false;
+		if (b[i][j] + piece.height != 6) return false;
+		for(var x=0;x<b.length;x++){
+			if(b[x][j] == piece.color) return false;
+		}
+		for(var x=0;x<b[i].length;x++){
+			if(b[i][x] == piece.color) return false;
+		}
+
+		
+		return true;
+
+	}
+
+	function display(b){
+		b.forEach(function(row){console.log(row.toString())})
+		console.log("");
+	}
+
+	function drawBoard(b){
+
+		var c=document.getElementById("myCanvas");
+		var ctx=c.getContext("2d");
+		
+		ctx.clearRect ( 0 , 0 , 300 , 300 );
+		for(i=0;i<b.length;i++){
+			for (j=0;j<b[i].length;j++){
+				//console.log(i,j,b[i][j]);
+				if (!Number.isInteger(b[i][j])){
+					ctx.fillStyle=b[i][j];
+				}else{
+					ctx.fillStyle='black';
+				}				
+				ctx.fillRect( (i*50), (j*50), (i*50)+50 ,(j*50)+50);
+				ctx.stroke();
+			}
+		}
+				
+	}
+
+	function copy(b){
+		var retVal = []
+		b.forEach(function(r){retVal.push(r.slice())})
+		return retVal;
+	}
+
+	
+	solveBoard(thePieces,theBoard,0);
+
+</script>
+</body>
+</html>
